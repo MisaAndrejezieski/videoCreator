@@ -1,12 +1,12 @@
 import os
 from tkinter import Tk, Label, Button, Entry, filedialog, StringVar, messagebox
 from PIL import Image, ImageDraw, ImageFont
-from moviepy.editor import ImageSequenceClip
+from moviepy.editor import ImageSequenceClip, VideoFileClip, concatenate_videoclips
 
-def create_image_with_text(text, image_path, output_image_path, font_path):
+def create_image_with_text(text, image_path, output_image_path):
     image = Image.open(image_path)
     draw = ImageDraw.Draw(image)
-    font = ImageFont.truetype(font_path, size=40)
+    font = ImageFont.load_default()  # Usando fonte padrão
 
     bbox = draw.textbbox((0, 0), text, font=font)
     text_width = bbox[2] - bbox[0]
@@ -16,17 +16,24 @@ def create_image_with_text(text, image_path, output_image_path, font_path):
     draw.text(position, text, font=font, fill="white")
     image.save(output_image_path)
 
-def generate_video(images, text, audio_path, font_path):
+def generate_video(images, text, audio_path):
     output_images = []
     
     for i, image in enumerate(images):
         output_image_path = f"output_image_{i}.png"
-        create_image_with_text(text, image, output_image_path, font_path)
+        create_image_with_text(text, image, output_image_path)
         output_images.append(output_image_path)
 
-    clip = ImageSequenceClip(output_images, fps=24)
-    clip = clip.set_duration(5)
-    clip.write_videofile("output_video.mp4", audio=audio_path)
+    clips = []
+    for img_path in output_images:
+        clip = VideoFileClip(img_path).set_duration(5)  # Cada imagem por 5 segundos
+        clip = clip.resize(0.8)  # Reduz o tamanho para aplicar zoom
+        clips.append(clip)
+
+    final_clip = concatenate_videoclips(clips, method="compose")
+    final_clip = final_clip.set_duration(len(images) * 5)  # Duração total do vídeo
+    final_clip = final_clip.set_audio(audio_path)  # Adiciona o áudio
+    final_clip.write_videofile("output_video.mp4", fps=24)
 
 def select_images():
     files = filedialog.askopenfilenames(title="Selecione as Imagens", filetypes=[("Image Files", "*.jpg;*.jpeg;*.png")])
@@ -38,23 +45,17 @@ def select_audio():
     if file:
         audio_var.set(file)
 
-def select_font():
-    file = filedialog.askopenfilename(title="Selecione a Fonte", filetypes=[("Font Files", "*.ttf")])
-    if file:
-        font_var.set(file)
-
 def generate_video_wrapper():
     images = images_var.get().split(';')
     text = text_var.get()
     audio_path = audio_var.get()
-    font_path = font_var.get()
 
-    if not images or not text or not audio_path or not font_path:
+    if not images or not text or not audio_path:
         messagebox.showerror("Erro", "Por favor, preencha todos os campos.")
         return
 
     try:
-        generate_video(images, text, audio_path, font_path)
+        generate_video(images, text, audio_path)
         messagebox.showinfo("Sucesso", "Vídeo gerado com sucesso!")
     except Exception as e:
         messagebox.showerror("Erro", str(e))
@@ -65,7 +66,6 @@ root.title("Criador de Vídeo")
 
 images_var = StringVar()
 audio_var = StringVar()
-font_var = StringVar()
 text_var = StringVar()
 
 Label(root, text="Texto:").grid(row=0, column=0, padx=10, pady=10)
@@ -79,10 +79,6 @@ Label(root, text="Áudio:").grid(row=2, column=0, padx=10, pady=10)
 Entry(root, textvariable=audio_var).grid(row=2, column=1, padx=10, pady=10)
 Button(root, text="Selecionar Áudio", command=select_audio).grid(row=2, column=2, padx=10, pady=10)
 
-Label(root, text="Fonte:").grid(row=3, column=0, padx=10, pady=10)
-Entry(root, textvariable=font_var).grid(row=3, column=1, padx=10, pady=10)
-Button(root, text="Selecionar Fonte", command=select_font).grid(row=3, column=2, padx=10, pady=10)
-
-Button(root, text="Gerar Vídeo", command=generate_video_wrapper).grid(row=4, column=1 , padx=10, pady=20)
+Button(root, text="Gerar Vídeo", command=generate _video_wrapper).grid(row=3, column=1, padx=10, pady=20)
 
 root.mainloop()
