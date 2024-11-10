@@ -8,6 +8,7 @@ def create_image_with_text(text, image_path, output_image_path):
     draw = ImageDraw.Draw(image)
     font = ImageFont.load_default()  # Usando fonte padrão
 
+    # Calcula a posição do texto
     bbox = draw.textbbox((0, 0), text, font=font)
     text_width = bbox[2] - bbox[0]
     text_height = bbox[3] - bbox[1]
@@ -79,6 +80,6 @@ Label(root, text="Áudio:").grid(row=2, column=0, padx=10, pady=10)
 Entry(root, textvariable=audio_var).grid(row=2, column=1, padx=10, pady=10)
 Button(root, text="Selecionar Áudio", command=select_audio).grid(row=2, column=2, padx=10, pady=10)
 
-Button(root, text="Gerar Vídeo", command=generate _video_wrapper).grid(row=3, column=1, padx=10, pady=20)
+Button(root, text="Gerar Vídeo", command=generate_video_wrapper).grid(row=3, column=1, padx=10, pady=20)
 
 root.mainloop()
