@@ -6,6 +6,10 @@ from gtts import gTTS
 from PIL import Image, ImageDraw, ImageFont
 
 def text_to_video(text, duration, output_file, bg_image_path=None):
+    # Adiciona extensão .mp4 se não estiver presente
+    if not output_file.endswith('.mp4'):
+        output_file += '.mp4'
+
     # Cria um arquivo de áudio a partir do texto
     tts = gTTS(text, lang='pt')
     tts.save("temp_audio.mp3")
