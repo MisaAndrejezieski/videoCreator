@@ -30,8 +30,8 @@ def text_to_video(text, duration, output_file, bg_image_path=None):
     # Cria um clipe de vídeo com a imagem
     clip = ImageClip('temp_image.png', duration=duration).set_audio(audio)
 
-    # Salva o vídeo
-    clip.write_videofile(output_file, fps=24)
+    # Salva o vídeo, especificando o codec
+    clip.write_videofile(output_file, fps=24, codec='libx264')
 
     # Remove arquivos temporários
     os.remove("temp_audio.mp3")
